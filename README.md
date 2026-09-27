@@ -35,7 +35,7 @@ Add the custom runtime as a build:
     "builds": [
         {
             "src": "core/wsgi.py",
-            "use": "vercel-python-gis-modern@1.0.1"
+            "use": "vercel-python-gis-modern@1.0.2"
         }
     ],
     "rewrites": [
