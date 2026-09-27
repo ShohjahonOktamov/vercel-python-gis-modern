@@ -2638,14 +2638,6 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
         throw err;
     }
     console.log("Installing required dependencies...");
-    await install_1.installRequirement({
-        pythonPath: pythonVersion.pythonPath,
-        pipPath: pythonVersion.pipPath,
-        dependency: "werkzeug",
-        version: "1.0.1",
-        workPath,
-        meta,
-    });
     let fsFiles = await build_utils_1.glob("**", workPath);
     const entryDirectory = path_1.dirname(entrypoint);
     const pipfileLockDir = fsFiles[path_1.join(entryDirectory, "Pipfile.lock")]
@@ -2866,10 +2858,10 @@ const build_utils_1 = __webpack_require__(445);
 // The order must be most recent first
 const allOptions = [
     {
-        version: '3.9',
-        pipPath: 'pip3.9',
-        pythonPath: 'python3.9',
-        runtime: 'python3.9',
+        version: '3.12',
+        pipPath: 'pip3.12',
+        pythonPath: 'python3.12',
+        runtime: 'python3.12',
     },
     {
         version: '3.6',
