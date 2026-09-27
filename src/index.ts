@@ -103,15 +103,6 @@ export const build = async ({
 
   console.log("Installing required dependencies...");
 
-  await installRequirement({
-    pythonPath: pythonVersion.pythonPath,
-    pipPath: pythonVersion.pipPath,
-    dependency: "werkzeug",
-    version: "1.0.1",
-    workPath,
-    meta,
-  });
-
   let fsFiles = await glob("**", workPath);
   const entryDirectory = dirname(entrypoint);
 
