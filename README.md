@@ -15,12 +15,11 @@ project/
 │       ├── models.py
 │       ├── views.py
 │       └── ...
-├── config/
+├── core/
 │   ├── settings.py
 │   ├── urls.py
+│   ├── wsgi.py
 │   └── ...
-├── core/
-│   └── wsgi.py
 ├── manage.py
 └── vercel.json
 ```
