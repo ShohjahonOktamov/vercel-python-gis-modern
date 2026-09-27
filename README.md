@@ -1,116 +1,193 @@
-# vercel-python-gis
+# vercel-python-gis-modern
 
-A vercel python runtime that has GEOS, PROJ and GDAL installed so you can use the geospatial libraries of Django in vercel.
+A Vercel Python runtime with **GEOS, PROJ, and GDAL** available for Django GeoDjango applications.
 
-## Usage with django
+## Usage with Django
 
-with a directory structure like this
+This runtime can be used with a Django project that uses GeoDjango and PostGIS.
+
+A typical project structure might look like:
+
+```text
+project/
+├── apps/
+│   └── shops/
+│       ├── models.py
+│       ├── views.py
+│       └── ...
+├── config/
+│   ├── settings.py
+│   ├── urls.py
+│   └── ...
+├── core/
+│   └── wsgi.py
+├── manage.py
+└── vercel.json
 ```
-api/
-  index.py
-config/
-  settings.py
-  ...
-core/
-  models.py
-  ...
-vercel.json
-```
 
-in /vercel.json add this runtime
+The names and structure of your Django project can be different. The important part is that `vercel.json` points to the WSGI entry point of your Django project.
+
+### 1. Configure `vercel.json`
+
+Add the custom runtime as a build:
+
 ```json
 {
-  "rewrites": [
-    { "source": "/static", "destination": "/static" },
-    { "source": "/(.*)", "destination": "api/index.py" }
-  ],
-  "functions": {
-    "api/index.py": {
-      "runtime": "vercel-python-gis@1.0.0",
-      // "runtime": "git+https://github.com/jperelli/vercel-python-gis.git#main@1.0.0" // for dev only
-    }
-  }
+    "builds": [
+        {
+            "src": "core/wsgi.py",
+            "use": "vercel-python-gis-modern@1.0.0"
+        }
+    ],
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "core/wsgi.py"
+        }
+    ]
 }
 ```
 
-In /config/settings.py add
+Replace `core/wsgi.py` with the path to your own WSGI entry point if it is located elsewhere.
+
+### 2. Configure GeoDjango
+
+In `config/settings.py`, configure the PostGIS database backend:
+
 ```python
 DATABASES = {
-  'default': {
-    'ENGINE': 'django.contrib.gis.db.backends.postgis',
-    ...
-  }
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        # ...
+    }
 }
+```
 
-# IMPORTANT
+The runtime provides the native GIS libraries. Configure Django to load them:
+
+```python
 GDAL_LIBRARY_PATH = "libgdal.so"
 GEOS_LIBRARY_PATH = "libgeos_c.so.1"
 ```
 
-Now in /core/models.py you can use gis models
+### 3. Use GeoDjango models
+
+You can use GeoDjango fields normally:
+
 ```python
 from django.contrib.gis.db import models
-...
+
+
 class MyModel(models.Model):
-  ...
-  geom = models.PolygonField()
-  ...
+    geom = models.PolygonField()
 ```
 
-And in /core/views.py you can use gis functions
+### 4. Use GeoDjango functionality
+
+GeoDjango's GEOS functionality is also available:
+
 ```python
 from django.contrib.gis.geos import Point
-...
+from django.http import HttpResponse
+
+
 def my_view(request):
-  p = Point(0, 0)
-  ...
-  return HttpResponse(p.wkt)
+    point = Point(0, 0)
+
+    return HttpResponse(point.wkt)
 ```
 
-In /api/index.py
+### 5. Configure the WSGI entry point
+
+The Vercel Python runtime expects the WSGI application to be exposed as `app`.
+
+For example, in `core/wsgi.py`:
+
 ```python
 import os
+
 from django.core.wsgi import get_wsgi_application
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
 app = get_wsgi_application()
 ```
 
-# Develop vercel-python-gis.
+If your project uses Django's conventional `application` variable, you can expose both:
 
-## Build instructions
-
-spin up the container with docker compose
-
+```python
+application = get_wsgi_application()
+app = application
 ```
+
+This allows the same WSGI module to remain compatible with Django's conventional `WSGI_APPLICATION` setting while also exposing `app` for Vercel.
+
+## Development
+
+The runtime contains native GIS libraries required by GeoDjango:
+
+* GDAL
+* GEOS
+* PROJ
+* libjpeg
+* libtiff
+* libsqlite
+* libjbig
+
+The binary libraries are packaged with the runtime and made available to the deployed Vercel function.
+
+### Building the runtime
+
+Start the build container:
+
+```bash
 docker-compose run --entrypoint='' builder bash
 ```
 
-run the repo-build.sh inside the container
+Then run:
 
-you should now have a /temp/stripped-files folder
+```bash
+./repo-build.sh
+```
 
-copy /temp/stripped-files to /dist/files
+This produces the stripped libraries in:
 
-## If you are changing code
+```text
+/temp/stripped-files
+```
 
-Code is copied from @vercel/python runtime, that lives here https://github.com/vercel/vercel/tree/main/packages/python, it's almost the same code.
-I'm trying to see if I can delete all that code from here and just use the @vercel/python, or inherit from it somehow.
+Copy them to:
 
-If you are updating code in /src/*, you need to run `npm run build` before pushing the repo.
+```text
+/dist/files
+```
 
-# License
+### Changing the runtime source
+
+The runtime source in `src/` is based on Vercel's Python runtime.
+
+After modifying files under `src/`, rebuild the package before publishing:
+
+```bash
+npm run build
+```
+
+## License
 
 MIT
 
-with code from vercel https://github.com/vercel/vercel/blob/main/LICENSE
-and distributing binary files from
- - libgdal https://gdal.org/license.html
- - libgeos https://github.com/libgeos/geos/blob/main/COPYING
- - libjbig https://github.com/ImageMagick/jbig/blob/main/COPYING
- - libjpeg https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/LICENSE.md
- - libproj https://github.com/OSGeo/PROJ/blob/master/COPYING
- - libsqlite https://www.sqlite.org/copyright.html
- - libtiff http://www.libtiff.org/misc.html
-# Author
+This project contains code derived from Vercel's Python runtime and distributes binary libraries under their respective licenses:
 
-@jperelli
+* GDAL — GDAL license
+* GEOS — GEOS license
+* libjbig — JBIG license
+* libjpeg — libjpeg-turbo license
+* PROJ — PROJ license
+* libsqlite — SQLite license
+* libtiff — libtiff license
+
+See the individual projects for their respective license terms.
+
+## Author
+
+@ShohjahonOktamov
