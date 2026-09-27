@@ -1,22 +1,22 @@
-import { join, dirname, basename } from "path";
+import {
+  BuildOptions,
+  debug,
+  download,
+  getWriteableDirectory,
+  glob,
+  GlobOptions,
+  Lambda,
+  NowBuildError,
+  shouldServe,
+} from "@vercel/build-utils";
 import execa from "execa";
 import fs from "fs";
+import { basename, dirname, join } from "path";
 import { promisify } from "util";
-const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
-import {
-  GlobOptions,
-  BuildOptions,
-  getWriteableDirectory,
-  download,
-  glob,
-  Lambda,
-  shouldServe,
-  debug,
-  NowBuildError,
-} from "@vercel/build-utils";
 import { installRequirement, installRequirementsFile } from "./install";
 import { getLatestPythonVersion, getSupportedPythonVersion } from "./version";
+const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
 
 async function pipenvConvert(cmd: string, srcDir: string) {
   debug("Running pipfile2req...");
@@ -75,6 +75,7 @@ export const build = async ({
   // see LD_LIBRARY_PATH here https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
   const gisPath = join(workPath, "lib");
   fs.mkdirSync(gisPath);
+
   for (const gisFilePath of fs.readdirSync(join(__dirname, "../dist/files"))) {
     const from = join(__dirname, "../dist/files", gisFilePath);
     const to = join(gisPath, gisFilePath);
@@ -83,6 +84,8 @@ export const build = async ({
     console.log(`Copying ${from} to ${to}`);
     fs.copyFileSync(from, to);
   }
+
+  console.log("GIS files in workPath:", fs.readdirSync(gisPath));
 
   try {
     // See: https://stackoverflow.com/a/44728772/376773
@@ -109,8 +112,8 @@ export const build = async ({
   const pipfileLockDir = fsFiles[join(entryDirectory, "Pipfile.lock")]
     ? join(workPath, entryDirectory)
     : fsFiles["Pipfile.lock"]
-    ? workPath
-    : null;
+      ? workPath
+      : null;
 
   if (pipfileLockDir) {
     debug('Found "Pipfile.lock"');
@@ -202,8 +205,17 @@ export const build = async ({
         : "node_modules/**",
   };
 
+  const lambdaFiles = await glob("**", globOptions);
+
+  console.log(
+    "GIS files found:",
+    Object.keys(lambdaFiles).filter(
+      (file) => file.startsWith("lib/") && file.match(/\.so(?:\.\d+(?:\.\d+)*)?$/)
+    )
+  );
+
   const lambda = new Lambda({
-    files: await glob("**", globOptions),
+    files: lambdaFiles,
     handler: `${handlerPyFilename}.vc_handler`,
     runtime: pythonVersion.runtime,
     environment: {},
@@ -216,3 +228,4 @@ export { shouldServe };
 
 // internal only - expect breaking changes if other packages depend on these exports
 export { installRequirement, installRequirementsFile };
+

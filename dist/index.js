@@ -2558,18 +2558,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.installRequirementsFile = exports.installRequirement = exports.shouldServe = exports.build = exports.downloadFilesInWorkPath = exports.version = void 0;
-const path_1 = __webpack_require__(622);
-const execa_1 = __importDefault(__webpack_require__(447));
-const fs_1 = __importDefault(__webpack_require__(747));
-const util_1 = __webpack_require__(669);
-const readFile = util_1.promisify(fs_1.default.readFile);
-const writeFile = util_1.promisify(fs_1.default.writeFile);
 const build_utils_1 = __webpack_require__(445);
 Object.defineProperty(exports, "shouldServe", ({ enumerable: true, get: function () { return build_utils_1.shouldServe; } }));
+const execa_1 = __importDefault(__webpack_require__(447));
+const fs_1 = __importDefault(__webpack_require__(747));
+const path_1 = __webpack_require__(622);
+const util_1 = __webpack_require__(669);
 const install_1 = __webpack_require__(649);
 Object.defineProperty(exports, "installRequirement", ({ enumerable: true, get: function () { return install_1.installRequirement; } }));
 Object.defineProperty(exports, "installRequirementsFile", ({ enumerable: true, get: function () { return install_1.installRequirementsFile; } }));
 const version_1 = __webpack_require__(946);
+const readFile = util_1.promisify(fs_1.default.readFile);
+const writeFile = util_1.promisify(fs_1.default.writeFile);
 async function pipenvConvert(cmd, srcDir) {
     build_utils_1.debug("Running pipfile2req...");
     try {
@@ -2620,6 +2620,7 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
         console.log(`Copying ${from} to ${to}`);
         fs_1.default.copyFileSync(from, to);
     }
+    console.log("GIS files in workPath:", fs_1.default.readdirSync(gisPath));
     try {
         // See: https://stackoverflow.com/a/44728772/376773
         //
@@ -2726,8 +2727,10 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
             ? config.excludeFiles
             : "node_modules/**",
     };
+    const lambdaFiles = await build_utils_1.glob("**", globOptions);
+    console.log("GIS files found:", Object.keys(lambdaFiles).filter((file) => file.startsWith("lib/") && file.match(/\.so(?:\.\d+(?:\.\d+)*)?$/)));
     const lambda = new build_utils_1.Lambda({
-        files: await build_utils_1.glob("**", globOptions),
+        files: lambdaFiles,
         handler: `${handlerPyFilename}.vc_handler`,
         runtime: pythonVersion.runtime,
         environment: {},
