@@ -2733,9 +2733,7 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
         files: lambdaFiles,
         handler: `${handlerPyFilename}.vc_handler`,
         runtime: pythonVersion.runtime,
-        environment: {
-            LD_LIBRARY_PATH: "/var/task/lib:/var/lang/lib"
-        },
+        environment: {},
     });
     return { output: lambda };
 };
@@ -2867,14 +2865,7 @@ const allOptions = [
         pipPath: 'pip3.12',
         pythonPath: 'python3.12',
         runtime: 'python3.12',
-    },
-    {
-        version: '3.6',
-        pipPath: 'pip3.6',
-        pythonPath: 'python3.6',
-        runtime: 'python3.6',
-        discontinueDate: new Date('2022-07-18'),
-    },
+    }
 ];
 function getDevPythonVersion() {
     // Use the system-installed version of `python3` when running `vercel dev`
