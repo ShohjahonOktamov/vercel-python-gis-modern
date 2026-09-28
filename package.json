@@ -1,6 +1,6 @@
 {
   "name": "vercel-python-gis-modern",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A modernized Vercel Python runtime with GIS libraries",
   "main": "./dist/index.js",
   "license": "MIT",
