@@ -2639,6 +2639,14 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
         throw err;
     }
     console.log("Installing required dependencies...");
+    await install_1.installRequirement({
+        pythonPath: pythonVersion.pythonPath,
+        pipPath: pythonVersion.pipPath,
+        dependency: "werkzeug",
+        version: "1.0.1",
+        workPath,
+        meta,
+    });
     let fsFiles = await build_utils_1.glob("**", workPath);
     const entryDirectory = path_1.dirname(entrypoint);
     const pipfileLockDir = fsFiles[path_1.join(entryDirectory, "Pipfile.lock")]
