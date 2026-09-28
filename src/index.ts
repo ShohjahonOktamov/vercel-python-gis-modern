@@ -74,7 +74,7 @@ export const build = async ({
   // aws lambda will find .so libraries in this directory
   // see LD_LIBRARY_PATH here https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
   const gisPath = join(workPath, "lib");
-  fs.mkdirSync(gisPath);
+  fs.mkdirSync(gisPath, { recursive: true });
 
   for (const gisFilePath of fs.readdirSync(join(__dirname, "../dist/files"))) {
     const from = join(__dirname, "../dist/files", gisFilePath);
@@ -218,7 +218,9 @@ export const build = async ({
     files: lambdaFiles,
     handler: `${handlerPyFilename}.vc_handler`,
     runtime: pythonVersion.runtime,
-    environment: {},
+    environment: {
+      LD_LIBRARY_PATH: "/var/task/lib:/var/lang/lib"
+    },
   });
 
   return { output: lambda };
@@ -227,5 +229,5 @@ export const build = async ({
 export { shouldServe };
 
 // internal only - expect breaking changes if other packages depend on these exports
-export { installRequirement, installRequirementsFile };
+  export { installRequirement, installRequirementsFile };
 

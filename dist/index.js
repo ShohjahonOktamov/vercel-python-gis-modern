@@ -2733,7 +2733,9 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
         files: lambdaFiles,
         handler: `${handlerPyFilename}.vc_handler`,
         runtime: pythonVersion.runtime,
-        environment: {},
+        environment: {
+            LD_LIBRARY_PATH: "/var/task/lib:/var/lang/lib"
+        },
     });
     return { output: lambda };
 };
