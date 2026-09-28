@@ -2612,7 +2612,7 @@ const build = async ({ workPath, files: originalFiles, entrypoint, meta = {}, co
     // aws lambda will find .so libraries in this directory
     // see LD_LIBRARY_PATH here https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
     const gisPath = path_1.join(workPath, "lib");
-    fs_1.default.mkdirSync(gisPath);
+    fs_1.default.mkdirSync(gisPath, { recursive: true });
     for (const gisFilePath of fs_1.default.readdirSync(path_1.join(__dirname, "../dist/files"))) {
         const from = path_1.join(__dirname, "../dist/files", gisFilePath);
         const to = path_1.join(gisPath, gisFilePath);

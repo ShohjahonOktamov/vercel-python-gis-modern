@@ -218,9 +218,7 @@ export const build = async ({
     files: lambdaFiles,
     handler: `${handlerPyFilename}.vc_handler`,
     runtime: pythonVersion.runtime,
-    environment: {
-      LD_LIBRARY_PATH: "/var/task/lib:/var/lang/lib"
-    },
+    environment: {},
   });
 
   return { output: lambda };
@@ -229,5 +227,5 @@ export const build = async ({
 export { shouldServe };
 
 // internal only - expect breaking changes if other packages depend on these exports
-  export { installRequirement, installRequirementsFile };
+export { installRequirement, installRequirementsFile };
 
