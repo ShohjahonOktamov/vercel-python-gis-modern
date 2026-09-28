@@ -65,6 +65,7 @@ DATABASES = {
 The runtime provides the native GIS libraries. Configure Django to load them:
 
 ```python
+PROJ_LIBRARY_PATH = "libproj.so"
 GDAL_LIBRARY_PATH = "libgdal.so"
 GEOS_LIBRARY_PATH = "libgeos_c.so.1"
 ```
